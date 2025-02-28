@@ -7,7 +7,9 @@ import com.example.restapi.service.IExpenseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin("*")
 public class ExpensesController {
 
     private final IExpenseService expenseService;
@@ -28,7 +31,11 @@ public class ExpensesController {
         List<ExpenseResponse> response = dtoList.stream().map(expenseDTO -> mapExpenseToResponse(expenseDTO)).collect(Collectors.toList());
         return response;
     }
-
+    @GetMapping("/expenses/{expenseId}")
+    public ExpenseResponse getExpenseById(@PathVariable String expenseId) {
+        ExpenseDTO expenseDTO = expenseService.getByExpenseId(expenseId);
+        return mapExpenseToResponse(expenseDTO);
+    }
     private ExpenseResponse mapExpenseToResponse(ExpenseDTO expenseDTO) {
         return modelMapper.map(expenseDTO, ExpenseResponse.class);
     }
