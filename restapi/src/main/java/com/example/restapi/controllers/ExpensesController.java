@@ -3,7 +3,6 @@ package com.example.restapi.controllers;
 import com.example.restapi.dto.ExpenseDTO;
 import com.example.restapi.io.ExpenseRequest;
 import com.example.restapi.io.ExpenseResponse;
-import com.example.restapi.service.ExpenseService;
 import com.example.restapi.service.IExpenseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@CrossOrigin("*")
 public class ExpensesController {
 
     private final IExpenseService expenseService;
@@ -51,6 +49,13 @@ public class ExpensesController {
         updatedExpenseDTO = expenseService.updateExpense(updatedExpenseDTO,expenseId);
         return mapExpenseDTOToResponse(updatedExpenseDTO);
     }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/expenses/{expenseId}")
+    public void deleteExpense(@PathVariable String expenseId) {
+        expenseService.deleteExpenseByEpenseId(expenseId);
+    }
+
     private ExpenseResponse mapExpenseDTOToResponse(ExpenseDTO expenseDTO) {
         return modelMapper.map(expenseDTO, ExpenseResponse.class);
     }
@@ -58,5 +63,6 @@ public class ExpensesController {
     private ExpenseDTO mapExpenseRequestToDTO (ExpenseRequest expenseRequest) {
         return modelMapper.map(expenseRequest,ExpenseDTO.class);
     }
+
 }
 

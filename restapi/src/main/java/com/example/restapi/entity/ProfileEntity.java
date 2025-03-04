@@ -6,36 +6,31 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
+
+
 @Entity
-@Table(name = "expenses")
+@Table(name = "profiles")
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ExpenseEntity {
+public class ProfileEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(unique = true)
-    private String expenseId;
+    private String profileId;
 
     private String name;
 
-    private String description;
+    private String password;
 
-    private String category;
-
-    private Date date;
-
-    private BigDecimal amount;
+    @Column(unique = true)
+    private String email;
 
     @CreationTimestamp
     @Column(nullable = false)
@@ -45,8 +40,4 @@ public class ExpenseEntity {
     @Column(nullable = false)
     private Timestamp updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY , optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    private ProfileEntity owner;
 }

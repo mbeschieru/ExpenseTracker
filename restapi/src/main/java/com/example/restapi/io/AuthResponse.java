@@ -5,18 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class ErrorObject {
+public class AuthResponse {
+    private String token;
 
-    private Integer statusCode;
-
-    private String message;
-
-    private Date timestamp;
-
-    private String errorCode;
+    private String email;
 }

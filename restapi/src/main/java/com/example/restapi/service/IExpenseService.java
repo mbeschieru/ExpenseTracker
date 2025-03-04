@@ -12,4 +12,5 @@ public interface IExpenseService {
 
     ExpenseDTO updateExpense(ExpenseDTO expenseDTO , String expenseId);
 
+    void deleteExpenseByEpenseId(String expenseId);
 }

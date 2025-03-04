@@ -1,9 +1,10 @@
-package com.example.restapi.service;
+package com.example.restapi.service.implementation;
 
 import com.example.restapi.dto.ExpenseDTO;
 import com.example.restapi.entity.ExpenseEntity;
 import com.example.restapi.exceptions.ResourceNotFoundException;
 import com.example.restapi.repository.IExpenseRepository;
+import com.example.restapi.service.IExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -17,21 +18,22 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ExpenseService implements IExpenseService{
+public class ExpenseService implements IExpenseService {
 
     private final IExpenseRepository expenseRepository;
     private final ModelMapper modelMapper;
+    private final AuthService authService;
 
     @Override
     public List<ExpenseDTO> getAllExpenses() {
-        List<ExpenseEntity> expenseEntities = expenseRepository.findAll();
+        List<ExpenseEntity> expenseEntities = expenseRepository.findByOwnerId(getLoggedInProfileId());
         List<ExpenseDTO> expenseDTOS = expenseEntities.stream().map(expenseEntity -> mapExpenseToDTO(expenseEntity)).collect(Collectors.toList());
         return expenseDTOS;
     }
 
     @Override
     public ExpenseDTO getByExpenseId(String expenseId) {
-        ExpenseEntity optionalExpense = expenseRepository.findByExpenseId(expenseId)
+        ExpenseEntity optionalExpense = expenseRepository.findByOwnerIdAndExpenseId(getLoggedInProfileId(),expenseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expense not found exception for id " + expenseId));
         return mapExpenseToDTO(optionalExpense);
     }
@@ -40,6 +42,7 @@ public class ExpenseService implements IExpenseService{
     public ExpenseDTO createExpense(ExpenseDTO expenseDTO) {
         ExpenseEntity newExpenseEntity = mapDtoToExpense(expenseDTO);
         newExpenseEntity.setExpenseId(UUID.randomUUID().toString());
+        newExpenseEntity.setOwner(authService.getLoggedInProfile());
         expenseRepository.save(newExpenseEntity);
         return mapExpenseToDTO(newExpenseEntity);
     }
@@ -54,6 +57,12 @@ public class ExpenseService implements IExpenseService{
         updatedExpense.setUpdatedAt(existingExpense.getUpdatedAt());
         updatedExpense = expenseRepository.save(updatedExpense);
         return mapExpenseToDTO(updatedExpense);
+    }
+
+    @Override
+    public void deleteExpenseByEpenseId(String expenseId) {
+        ExpenseEntity expenseEntity = getExpenseEntity(expenseId);
+        expenseRepository.delete(expenseEntity);
     }
 
 
@@ -71,5 +80,9 @@ public class ExpenseService implements IExpenseService{
                 .orElseThrow(
                         () -> new ResourceNotFoundException("Expense not found for the expense id " + expenseId)
                 );
+    }
+
+    private Long getLoggedInProfileId() {
+        return authService.getLoggedInProfile().getId();
     }
 }

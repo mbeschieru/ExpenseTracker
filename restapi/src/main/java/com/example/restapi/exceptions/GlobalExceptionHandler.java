@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 @ResponseStatus(HttpStatus.NOT_FOUND)
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
     public ErrorObject handleResourceNotFoundException(ResourceNotFoundException ex , WebRequest request) {
         return ErrorObject.builder()
@@ -40,6 +41,28 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         errorResponse.put("timestamp",new Date());
         errorResponse.put("errorCode","VALIDATION_FAILED");
         return new ResponseEntity<Object>(errorResponse,HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorObject handleGeneralException(ResourceNotFoundException ex , WebRequest request) {
+        return ErrorObject.builder()
+                .errorCode("DATA_NOT_FOUND")
+                .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .message(ex.getMessage())
+                .timestamp(new Date())
+                .build();
+    }
+
+    @ExceptionHandler(ItemExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorObject handleItemExistsException(ItemExistsException ex , WebRequest request) {
+        return ErrorObject.builder()
+                .errorCode("DATA_EXISTS")
+                .statusCode(HttpStatus.CONFLICT.value())
+                .message(ex.getMessage())
+                .timestamp(new Date())
+                .build();
     }
 
 
