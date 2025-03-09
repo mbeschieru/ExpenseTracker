@@ -31,12 +31,12 @@ public class JwtTokenUtil {
                 .compact();
     }
 
-    public String geteUsernameFromToken(String token) {
+    public String getUsernameFromToken(String token) {
         return getClaimFromToken(token,Claims::getSubject);
     }
 
     public boolean validateToken(String token , UserDetails userDetails) {
-        final String email= geteUsernameFromToken(token);
+        final String email= getUsernameFromToken(token);
         return email.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 

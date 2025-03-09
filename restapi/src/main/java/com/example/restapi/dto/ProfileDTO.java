@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @Builder
 public class ProfileDTO {
-    private String expenseId;
+    private String profileId;
     private String email;
     private String name;
     private String password;

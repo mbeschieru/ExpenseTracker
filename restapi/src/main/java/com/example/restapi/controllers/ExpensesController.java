@@ -4,6 +4,8 @@ import com.example.restapi.dto.ExpenseDTO;
 import com.example.restapi.io.ExpenseRequest;
 import com.example.restapi.io.ExpenseResponse;
 import com.example.restapi.service.IExpenseService;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,11 +19,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
+
 public class ExpensesController {
 
     private final IExpenseService expenseService;
     private final ModelMapper modelMapper;
-
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/expenses")
     public List<ExpenseResponse> getExpenses() {
         log.info("API GET /expenses called");
@@ -29,6 +32,7 @@ public class ExpensesController {
         List<ExpenseResponse> response = dtoList.stream().map(expenseDTO -> mapExpenseDTOToResponse(expenseDTO)).collect(Collectors.toList());
         return response;
     }
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/expenses/{expenseId}")
     public ExpenseResponse getExpenseById(@PathVariable String expenseId) {
         ExpenseDTO expenseDTO = expenseService.getByExpenseId(expenseId);

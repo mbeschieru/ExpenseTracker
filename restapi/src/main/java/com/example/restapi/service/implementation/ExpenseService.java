@@ -55,6 +55,7 @@ public class ExpenseService implements IExpenseService {
         updatedExpense.setExpenseId(expenseId);
         updatedExpense.setCreatedAt(existingExpense.getCreatedAt());
         updatedExpense.setUpdatedAt(existingExpense.getUpdatedAt());
+        updatedExpense.setOwner(existingExpense.getOwner());
         updatedExpense = expenseRepository.save(updatedExpense);
         return mapExpenseToDTO(updatedExpense);
     }

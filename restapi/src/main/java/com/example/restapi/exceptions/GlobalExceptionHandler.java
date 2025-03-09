@@ -43,9 +43,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(errorResponse,HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorObject handleGeneralException(ResourceNotFoundException ex , WebRequest request) {
+    public ErrorObject handleGeneralException(Exception ex , WebRequest request) {
         return ErrorObject.builder()
                 .errorCode("DATA_NOT_FOUND")
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())

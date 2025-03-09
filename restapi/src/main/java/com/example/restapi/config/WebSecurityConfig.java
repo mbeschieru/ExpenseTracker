@@ -1,12 +1,12 @@
     package com.example.restapi.config;
 
     import com.example.restapi.service.implementation.CustomUserDetailsService;
+    import com.example.restapi.service.implementation.TokenBlackListService;
     import com.example.restapi.util.JwtTokenUtil;
     import lombok.RequiredArgsConstructor;
     import org.springframework.context.annotation.Bean;
     import org.springframework.context.annotation.Configuration;
     import org.springframework.security.authentication.AuthenticationManager;
-    import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
     import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
     import org.springframework.security.config.Customizer;
     import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -24,14 +24,18 @@
 
         private final CustomUserDetailsService customUserDetailsService;
         private final JwtTokenUtil jwtTokenUtil;
+        private final TokenBlackListService tokenBlackListService;
 
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
             return httpSecurity.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.requestMatchers("/login" , "/register").permitAll().anyRequest().authenticated())
+                    .authorizeHttpRequests(auth -> auth.requestMatchers("/login", "/register", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**")
+                            .permitAll()
+                            .requestMatchers("/expenses/**")
+                            .permitAll()
+                            .anyRequest().authenticated())
                     .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
-                    .httpBasic(Customizer.withDefaults())
                     .build();
         }
         @Bean
@@ -49,7 +53,7 @@
 
         @Bean
         public JwtRequestFilter authenticationJwtTokenFilter() {
-            return new JwtRequestFilter(jwtTokenUtil,customUserDetailsService);
+            return new JwtRequestFilter(jwtTokenUtil,customUserDetailsService,tokenBlackListService);
         }
         @Bean
         public PasswordEncoder passwordEncoder() {

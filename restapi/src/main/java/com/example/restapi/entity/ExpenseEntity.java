@@ -13,8 +13,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+
 @Entity
-@Table(name = "expenses")
+@Table(name = "expenses",
+        uniqueConstraints = @UniqueConstraint(columnNames = "expenseId"),
+        indexes = @Index(name = "idx_owner_id", columnList = "owner_id")) // Improves performance
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,29 +27,25 @@ public class ExpenseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String expenseId;
 
     private String name;
-
     private String description;
-
     private String category;
-
     private Date date;
-
     private BigDecimal amount;
 
     @CreationTimestamp
-    @Column(nullable = false)
+    @Column(nullable = false, updatable = false)
     private Timestamp createdAt;
 
     @UpdateTimestamp
     @Column(nullable = false)
     private Timestamp updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY , optional = false)
-    @JoinColumn(name = "owner_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false, foreignKey = @ForeignKey(name = "FK_expenses_profiles"))
     @OnDelete(action = OnDeleteAction.CASCADE)
     private ProfileEntity owner;
 }

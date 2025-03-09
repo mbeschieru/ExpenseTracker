@@ -34,15 +34,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                  response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
              }
              try {
-                 email = jwtTokenUtil.geteUsernameFromToken(token);
+                 email = jwtTokenUtil.getUsernameFromToken(token);
+                 System.out.println("Extracted email: " + email);
+
              }catch (IllegalArgumentException ex) {
                  throw new RuntimeException("Unable to get jwt token");
              } catch (ExpiredJwtException ex) {
                  throw new RuntimeException("Unable to get jwt token");
              }
         }
-        if (email != null && SecurityContextHolder.getContext().getAuthentication() != null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
+            System.out.println("Extracted email" + email);
+            System.out.println("User email" + userDetails.getUsername());
             if (jwtTokenUtil.validateToken(token,userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails,null,userDetails.getAuthorities());
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
