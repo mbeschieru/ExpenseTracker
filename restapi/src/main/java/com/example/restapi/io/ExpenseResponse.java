@@ -1,5 +1,6 @@
 package com.example.restapi.io;
 
+import com.example.restapi.entity.ExpenseCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class ExpenseResponse {
 
     private String description;
 
-    private String category;
+    private ExpenseCategory category;
 
     private Date date;
 

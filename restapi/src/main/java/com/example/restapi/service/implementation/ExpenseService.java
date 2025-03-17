@@ -7,11 +7,11 @@ import com.example.restapi.repository.IExpenseRepository;
 import com.example.restapi.service.IExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -29,6 +29,13 @@ public class ExpenseService implements IExpenseService {
         List<ExpenseEntity> expenseEntities = expenseRepository.findByOwnerId(getLoggedInProfileId());
         List<ExpenseDTO> expenseDTOS = expenseEntities.stream().map(expenseEntity -> mapExpenseToDTO(expenseEntity)).collect(Collectors.toList());
         return expenseDTOS;
+    }
+
+    @Override
+    public Page<ExpenseDTO> getAllExpensesPaged(int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page,pageSize);
+        Page<ExpenseEntity> expenseEntityPage = expenseRepository.findAll(pageable);
+        return expenseEntityPage.map(entity -> mapExpenseToDTO(entity));
     }
 
     @Override

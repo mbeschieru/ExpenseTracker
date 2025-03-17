@@ -13,6 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.UUID;
 
 @Entity
 @Table(name = "expenses",
@@ -32,7 +33,8 @@ public class ExpenseEntity {
 
     private String name;
     private String description;
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private ExpenseCategory category;
     private Date date;
     private BigDecimal amount;
 

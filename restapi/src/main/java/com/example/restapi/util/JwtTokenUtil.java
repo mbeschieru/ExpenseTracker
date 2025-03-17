@@ -31,6 +31,17 @@ public class JwtTokenUtil {
                 .compact();
     }
 
+    public String generateToken(String email) {
+        Map<String,Object> claims = new HashMap<>();
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(email)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_TOKEN_DURATION * 1000))
+                .signWith(SignatureAlgorithm.HS512,secret)
+                .compact();
+    }
+
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token,Claims::getSubject);
     }

@@ -32,15 +32,15 @@ public class AuthController {
     private final JwtTokenUtil jwtTokenUtil;
     private final CustomUserDetailsService customUserDetailsService;
     private final TokenBlackListService tokenBlackListService;
-
-    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping("/auth/register")
     ProfileResponse createProfile(@Valid @RequestBody ProfileRequest profileRequest) {
         ProfileDTO profileDTO = mapToProfileDTO(profileRequest);
         profileDTO = profileService.createProfile(profileDTO);
         return mapToProfileResponse(profileDTO);
     }
-
-    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    @PostMapping("/auth/login")
     public AuthResponse authenticateUser(@RequestBody AuthRequest authRequest) throws Exception {
         final UserDetails userDetails = customUserDetailsService.loadUserByUsername(authRequest.getEmail());
         authenticate(authRequest);
@@ -49,12 +49,20 @@ public class AuthController {
     }
 
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @PostMapping("/logout")
-        private void logout (HttpServletRequest request) {
-            String token = extractJwtTokenFromRequest(request);
+    @PostMapping("/auth/logout")
+    public void logout (HttpServletRequest request) {
+        String token = extractJwtTokenFromRequest(request);
             if (token != null) {
                 tokenBlackListService.addTokenToBlacklist(token);
             }
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping ("/auth/me")
+        public AuthResponse getLoggedInUser(HttpServletRequest request) {
+            String token = extractJwtTokenFromRequest(request);
+            String email = jwtTokenUtil.getUsernameFromToken(token);
+            return AuthResponse.builder().token(token).email(email).build();
         }
     private void authenticate(AuthRequest authRequest) throws Exception {
         try{

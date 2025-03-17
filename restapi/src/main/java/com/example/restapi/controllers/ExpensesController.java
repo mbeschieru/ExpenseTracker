@@ -10,11 +10,15 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.lang.Long.sum;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,20 +29,22 @@ public class ExpensesController {
     private final IExpenseService expenseService;
     private final ModelMapper modelMapper;
     @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/expenses")
-    public List<ExpenseResponse> getExpenses() {
-        log.info("API GET /expenses called");
-        List<ExpenseDTO> dtoList = expenseService.getAllExpenses();
-        List<ExpenseResponse> response = dtoList.stream().map(expenseDTO -> mapExpenseDTOToResponse(expenseDTO)).collect(Collectors.toList());
-        return response;
-    }
-    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/expenses/{expenseId}")
     public ExpenseResponse getExpenseById(@PathVariable String expenseId) {
         ExpenseDTO expenseDTO = expenseService.getByExpenseId(expenseId);
         return mapExpenseDTOToResponse(expenseDTO);
     }
 
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/expenses")
+    public Page<ExpenseResponse> getExpenses(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int pageSize
+    ) {
+        Page<ExpenseDTO> expenseDTOS = expenseService.getAllExpensesPaged(page, pageSize);
+        Page<ExpenseResponse> responsePage = expenseDTOS.map(this::mapExpenseDTOToResponse);
+        return responsePage;
+    }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/expenses")
     public ExpenseResponse createExpense(@Valid @RequestBody ExpenseRequest request) {
@@ -58,6 +64,16 @@ public class ExpensesController {
     @DeleteMapping("/expenses/{expenseId}")
     public void deleteExpense(@PathVariable String expenseId) {
         expenseService.deleteExpenseByEpenseId(expenseId);
+    }
+
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/expenses/total")
+    public double getTotalExpenses() {
+        List<ExpenseDTO> dtoList = expenseService.getAllExpenses();
+        double sum = dtoList.stream()
+                .mapToDouble(ExpenseDTO::getAmountDoubleValue)
+                .sum();
+        return sum;
     }
 
     private ExpenseResponse mapExpenseDTOToResponse(ExpenseDTO expenseDTO) {

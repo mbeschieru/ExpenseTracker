@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ErrorObject handleResourceNotFoundException(ResourceNotFoundException ex , WebRequest request) {
+    public ErrorObject handleResourceNotFoundException(ResourceNotFoundException ex ) {
         return ErrorObject.builder()
                 .errorCode("DATA_NOT_FOUND")
                 .statusCode(HttpStatus.NOT_FOUND.value())

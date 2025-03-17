@@ -1,5 +1,6 @@
 package com.example.restapi.dto;
 
+import com.example.restapi.entity.ExpenseCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,11 +15,22 @@ import java.util.Date;
 @Builder
 public class ExpenseDTO {
     private String expenseId;
+
     private String name;
+
     private String description;
-    private String category;
+
+    private ExpenseCategory category;
+
     private Date date;
+
     private BigDecimal amount;
+
     private Timestamp createdAt;
+
     private Timestamp updatedAt;
+
+    public double getAmountDoubleValue() {
+        return  amount.doubleValue();
+    }
 }
