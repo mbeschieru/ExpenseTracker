@@ -43,7 +43,7 @@ public class ExpenseEntity {
     private Timestamp createdAt;
 
     @UpdateTimestamp
-    @Column(nullable = false)
+    @Column(nullable = false)   
     private Timestamp updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

@@ -8,10 +8,13 @@ import com.example.restapi.service.IExpenseService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -32,10 +35,28 @@ public class ExpenseService implements IExpenseService {
     }
 
     @Override
-    public Page<ExpenseDTO> getAllExpensesPaged(int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page,pageSize);
-        Page<ExpenseEntity> expenseEntityPage = expenseRepository.findAll(pageable);
-        return expenseEntityPage.map(entity -> mapExpenseToDTO(entity));
+    public Page<ExpenseDTO> getAllExpensesPaged(int page, int pageSize, String category, String startDate, String endDate, Double minAmount, Double maxAmount) {
+        List<ExpenseEntity> expenses = expenseRepository.findByOwnerId(getLoggedInProfileId());
+        List<ExpenseDTO> filteredExpenses = expenses.stream()
+                .filter(expense -> category == null || category.isEmpty() || expense.getCategory().equals(category))
+                .filter(expense -> startDate == null || !expense.getCreatedAt().before(Timestamp.valueOf(startDate + " 00:00:00")))
+                .filter(expense -> endDate == null || !expense.getCreatedAt().after(Timestamp.valueOf(endDate + " 23:59:59")))
+                .filter(expense -> minAmount == null || expense.getAmount().doubleValue() >= minAmount)
+                .filter(expense -> maxAmount == null || expense.getAmount().doubleValue() <= maxAmount)
+                .map(this::mapExpenseToDTO)
+                .collect(Collectors.toList());
+
+        return paginateList(filteredExpenses, PageRequest.of(page, pageSize));
+    }
+
+    private Page<ExpenseDTO> paginateList(List<ExpenseDTO> expenses, Pageable pageable) {
+        int total = expenses.size();
+        int start = Math.min((int) pageable.getOffset(), total);
+        int end = Math.min(start + pageable.getPageSize(), total);
+
+        List<ExpenseDTO> pagedList = expenses.subList(start, end);
+
+        return new PageImpl<>(pagedList, pageable, total);
     }
 
     @Override

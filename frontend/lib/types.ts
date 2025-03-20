@@ -17,6 +17,11 @@ export type ExpenseInput = {
   amount: number;
 };
 
+export type RegisterResponse = {
+  token: string;
+  email: string;
+};
+
 export type ExpenseUpdateInput = ExpenseInput & {
   expenseId: string;
 };

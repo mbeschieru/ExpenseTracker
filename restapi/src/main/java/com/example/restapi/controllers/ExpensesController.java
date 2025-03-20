@@ -39,9 +39,14 @@ public class ExpensesController {
     @GetMapping("/expenses")
     public Page<ExpenseResponse> getExpenses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int pageSize
+            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Double minAmount,
+            @RequestParam(required = false) Double maxAmount
     ) {
-        Page<ExpenseDTO> expenseDTOS = expenseService.getAllExpensesPaged(page, pageSize);
+        Page<ExpenseDTO> expenseDTOS = expenseService.getAllExpensesPaged(page, pageSize,category,startDate,endDate,minAmount,maxAmount);
         Page<ExpenseResponse> responsePage = expenseDTOS.map(this::mapExpenseDTOToResponse);
         return responsePage;
     }

@@ -1,73 +1,63 @@
-"use server"
+"use server";
 
-import { cookies } from "next/headers"
-import type { SessionType, LoginResponse } from "./types"
-import { jwtDecode } from "jwt-decode" // Changed from import jwt_decode from "jwt-decode"
+import { cookies } from "next/headers";
+import type { SessionType, LoginResponse } from "./types";
+import { jwtDecode } from "jwt-decode";
 
-type JwtPayload = {
-  sub: string
-  exp: number
-  email: string
+interface JwtPayload {
+  exp: number;
 }
 
-// Update the createSession function to await cookies()
-export async function createSession(loginResponse: LoginResponse) {
+export async function createSession(loginResponse: {
+  token: string;
+  email: string;
+}) {
   try {
-    // Decode the JWT to get the expiration time
-    const decoded = jwtDecode<JwtPayload>(loginResponse.token)
+    const decoded = jwtDecode<{ exp: number }>(loginResponse.token);
 
-    // Create a session object
-    const session: SessionType = {
+    const session = {
       token: loginResponse.token,
       email: loginResponse.email,
-      expires: new Date(decoded.exp * 1000), // Convert from seconds to milliseconds
-    }
-
-    // Store the session in a cookie
-    const cookieStore = await cookies()
-    cookieStore.set("session", JSON.stringify(session), {
-      httpOnly: true,
       expires: new Date(decoded.exp * 1000),
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    })
+    };
 
-    return session
+    cookies().set("session", JSON.stringify(session), {
+      httpOnly: true,
+      expires: session.expires,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    return session;
   } catch (error) {
-    console.error("Error creating session:", error)
-    throw new Error("Failed to create session")
+    console.error("Error creating session:", error);
+    throw new Error("Failed to create session");
   }
 }
 
-// Update the getSession function to await cookies()
-export async function getSession(): Promise<SessionType | null> {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get("session")
-
-  if (!sessionCookie?.value) {
-    return null
-  }
-
+export async function getSession() {
   try {
-    const session: SessionType = JSON.parse(sessionCookie.value)
+    const cookie = cookies().get("session");
+    if (!cookie) return null;
 
-    // Check if the session is expired
+    const session = JSON.parse(cookie.value) as {
+      token: string;
+      email: string;
+      expires: string;
+    };
+
     if (new Date(session.expires) < new Date()) {
-      await deleteSession()
-      return null
+      deleteSession();
+      return null;
     }
 
-    return session
+    return session;
   } catch (error) {
-    console.error("Error parsing session:", error)
-    return null
+    console.error("Error parsing session:", error);
+    return null;
   }
 }
 
-// Update the deleteSession function to await cookies()
 export async function deleteSession() {
-  const cookieStore = await cookies()
-  cookieStore.delete("session")
+  cookies().delete("session");
 }
-

@@ -4,6 +4,7 @@ import { getExpenses, getTotalAmount } from "@/lib/expenses";
 import Navbar from "@/components/navbar";
 import ExpenseList from "@/components/expense-list";
 import TotalExpenses from "@/components/total-expenses";
+import { cookies } from "next/headers";
 
 export default async function DashboardPage({
   searchParams,
@@ -13,12 +14,6 @@ export default async function DashboardPage({
     pageSize?: string;
   };
 }) {
-  const session = await getSession();
-
-  if (!session) {
-    redirect("/");
-  }
-
   const searchParam = await searchParams;
   // Get page and pageSize from search params or use defaults
   const page = searchParam.page ? parseInt(searchParam.page) : 0;

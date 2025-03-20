@@ -1,7 +1,12 @@
 "use server";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import type { ExpenseInput, ExpenseUpdateInput, LoginResponse } from "./types";
+import type {
+  ExpenseInput,
+  ExpenseUpdateInput,
+  LoginResponse,
+  RegisterResponse,
+} from "./types";
 import { createSession, deleteSession, getSession } from "./session";
 import axiosClient from "./axios-client";
 
@@ -12,6 +17,7 @@ export async function login(email: string, password: string) {
       password,
     });
 
+    console.log(response);
     // Create a session with the JWT token
     await createSession(response.data);
 
@@ -49,6 +55,28 @@ export async function logout() {
     console.error("Logout error:", error);
     // Instead of throwing an error, just redirect to login page
     redirect("/");
+  }
+}
+
+export async function register(name: string, email: string, password: string) {
+  try {
+    await axiosClient.post<RegisterResponse>("/auth/register", {
+      name,
+      email,
+      password,
+    });
+
+    await login(email, password);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    return {
+      success: false,
+      error:
+        error.response?.data?.message ||
+        "Registration failed. Please try again.",
+    };
   }
 }
 

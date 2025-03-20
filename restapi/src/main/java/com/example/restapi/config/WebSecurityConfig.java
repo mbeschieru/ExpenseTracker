@@ -85,20 +85,14 @@
                 OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
                 String email = oAuth2User.getAttribute("email");
 
-                ProfileEntity profileEntity = profileRepository.findByEmail(email)
-                        .orElseThrow(() -> new UsernameNotFoundException("OAuth user not found"));
+                UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
 
-                String token = jwtTokenUtil.generateToken(
-                        new User(profileEntity.getEmail(), profileEntity.getPassword(), new ArrayList<>())
-                );
+                String token = jwtTokenUtil.generateToken(userDetails);
 
-                AuthResponse authResponse = AuthResponse.builder()
-                        .token(token)
-                        .email(email)
-                        .build();
 
-                response.setContentType("application/json");
-                response.getWriter().write(new ObjectMapper().writeValueAsString(authResponse));
+                String frontendRedirectUri = "http://localhost:3000/oauth/callback?token=" + token + "&email=" + email;
+
+                response.sendRedirect(frontendRedirectUri);
             });
         }
     }
