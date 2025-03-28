@@ -1,15 +1,23 @@
 "use server";
-
-import type { PaginatedResponse, ExpenseType } from "./types";
 import { getSession } from "./session";
 import axiosClient from "./axios-client";
 
 export async function getExpenses({
   page = 0,
   pageSize = 10,
+  category,
+  startDate,
+  endDate,
+  minAmount,
+  maxAmount,
 }: {
   page?: number;
   pageSize?: number;
+  category?: string;
+  startDate?: string;
+  endDate?: string;
+  minAmount?: string;
+  maxAmount?: string;
 }) {
   try {
     const session = await getSession();
@@ -18,27 +26,54 @@ export async function getExpenses({
       throw new Error("Unauthorized");
     }
 
-    // Build query parameters - only pagination
+    // Build query parameters
     const params: Record<string, string> = {
       page: page.toString(),
       pageSize: pageSize.toString(),
     };
 
-    // Make the API request
-    const response = await axiosClient.get<PaginatedResponse<ExpenseType>>(
-      "/expenses",
-      { params }
-    );
+    // Only add filter parameters if they are defined and not empty
+    if (category && category !== "all") {
+      params.category = category;
+    }
 
-    // Extract the data from the Spring Boot Page response
+    if (startDate) {
+      params.startDate = startDate;
+    }
+
+    if (endDate) {
+      params.endDate = endDate;
+    }
+
+    if (minAmount) {
+      params.minAmount = minAmount;
+    }
+
+    if (maxAmount) {
+      params.maxAmount = maxAmount;
+    }
+
+    console.log("API request params:", params); // Log the params for debugging
+
+    // Make the API request
+    const response = await axiosClient.get<any>("/expenses", { params });
+
+    console.log("API response:", response.data); // Log the response for debugging
+
+    // Extract the data from the response
+    const totalAmount =
+      response.data.totalAmount !== undefined ? response.data.totalAmount : 0;
+
     return {
-      expenses: response.data.content,
-      totalPages: response.data.totalPages,
-      totalExpenses: response.data.totalElements,
-      currentPage: response.data.number, // This is 0-based
-      pageSize: response.data.size,
-      isLastPage: response.data.last,
-      isFirstPage: response.data.first,
+      expenses: response.data.content || [],
+      totalPages: response.data.totalPages || 0,
+      totalExpenses: response.data.total || 0,
+      currentPage: response.data.page || 0,
+      pageSize: response.data.pageSize || pageSize,
+      isLastPage:
+        (response.data.page || 0) >= (response.data.totalPages - 1 || 0),
+      isFirstPage: (response.data.page || 0) === 0,
+      totalAmount: totalAmount,
     };
   } catch (error) {
     console.error("Get expenses error:", error);
@@ -51,25 +86,7 @@ export async function getExpenses({
       pageSize: pageSize,
       isLastPage: true,
       isFirstPage: true,
+      totalAmount: 0,
     };
-  }
-}
-
-export async function getTotalAmount() {
-  try {
-    const session = await getSession();
-
-    if (!session) {
-      throw new Error("Unauthorized");
-    }
-
-    // Make the API request - no filters
-    const response = await axiosClient.get<number>("/expenses/total");
-
-    // If the API returns just a number directly
-    return response.data;
-  } catch (error) {
-    console.error("Get total amount error:", error);
-    return 0;
   }
 }

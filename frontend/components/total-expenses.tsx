@@ -1,10 +1,19 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 type TotalExpensesProps = {
-  amount: number
-}
+  amount: number | undefined | null;
+};
 
 export default function TotalExpenses({ amount }: TotalExpensesProps) {
+  // Handle undefined or null amount
+  const displayAmount = amount !== undefined && amount !== null ? amount : 0;
+
   return (
     <Card className="mb-6">
       <CardHeader className="pb-2">
@@ -12,9 +21,8 @@ export default function TotalExpenses({ amount }: TotalExpensesProps) {
         <CardDescription>Sum of all your tracked expenses</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-3xl font-bold">${amount.toFixed(2)}</p>
+        <p className="text-3xl font-bold">${displayAmount.toFixed(2)}</p>
       </CardContent>
     </Card>
-  )
+  );
 }
-

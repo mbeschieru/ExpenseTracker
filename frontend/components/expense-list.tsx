@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,13 @@ type ExpenseListProps = {
   pageSize: number;
   isFirstPage: boolean;
   isLastPage: boolean;
+  filters: {
+    category?: string;
+    startDate?: string;
+    endDate?: string;
+    minAmount?: string;
+    maxAmount?: string;
+  };
 };
 
 export default function ExpenseList({
@@ -27,9 +34,11 @@ export default function ExpenseList({
   pageSize,
   isFirstPage,
   isLastPage,
+  filters,
 }: ExpenseListProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<ExpenseType | null>(
@@ -49,13 +58,20 @@ export default function ExpenseList({
   };
 
   const handlePageChange = (page: number) => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams);
     params.set("page", page.toString());
 
     // Preserve the pageSize if it exists
     if (pageSize !== 10) {
       params.set("pageSize", pageSize.toString());
     }
+
+    // Preserve all filter parameters
+    if (filters.category) params.set("category", filters.category);
+    if (filters.startDate) params.set("startDate", filters.startDate);
+    if (filters.endDate) params.set("endDate", filters.endDate);
+    if (filters.minAmount) params.set("minAmount", filters.minAmount);
+    if (filters.maxAmount) params.set("maxAmount", filters.maxAmount);
 
     router.push(`${pathname}?${params.toString()}`);
   };

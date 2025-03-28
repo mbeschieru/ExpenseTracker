@@ -75,3 +75,77 @@
   }
 }
 
+/* Calendar styles */
+.rdp {
+  margin: 0;
+}
+
+.rdp-months {
+  justify-content: center;
+}
+
+.rdp-month {
+  background-color: hsl(var(--background));
+}
+
+.rdp-day_selected,
+.rdp-day_selected:focus-visible,
+.rdp-day_selected:hover {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+}
+
+.rdp-day_today {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Fix for day headers alignment */
+.rdp-head_row {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.rdp-row {
+  display: grid !important;
+  grid-template-columns: repeat(7, 1fr) !important;
+}
+
+.rdp-head_cell {
+  width: auto !important;
+  text-align: center !important;
+}
+
+.rdp-cell {
+  width: auto !important;
+  text-align: center !important;
+}
+
+.rdp-day {
+  margin: 0 auto !important;
+}
+
+/* Fix for weekday names */
+.rdp-head_cell {
+  font-size: 0.875rem !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Fix for the weekday names being squished together */
+.rdp-weeknumber,
+.rdp-day {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 36px !important;
+  width: 36px !important;
+  margin: 0 auto !important;
+}
