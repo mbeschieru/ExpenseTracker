@@ -1,6 +1,7 @@
 package com.example.restapi.controllers;
 
 import com.example.restapi.dto.ExpenseDTO;
+import com.example.restapi.dto.ExpensePageResponseDTO;
 import com.example.restapi.io.ExpenseRequest;
 import com.example.restapi.io.ExpenseResponse;
 import com.example.restapi.service.IExpenseService;
@@ -37,7 +38,7 @@ public class ExpensesController {
 
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/expenses")
-    public Page<ExpenseResponse> getExpenses(
+    public ExpensePageResponseDTO getExpenses(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int pageSize,
             @RequestParam(required = false) String category,
@@ -46,9 +47,9 @@ public class ExpensesController {
             @RequestParam(required = false) Double minAmount,
             @RequestParam(required = false) Double maxAmount
     ) {
-        Page<ExpenseDTO> expenseDTOS = expenseService.getAllExpensesPaged(page, pageSize,category,startDate,endDate,minAmount,maxAmount);
-        Page<ExpenseResponse> responsePage = expenseDTOS.map(this::mapExpenseDTOToResponse);
-        return responsePage;
+        ExpensePageResponseDTO expenseDTOS = expenseService.getAllExpensesPaged(page, pageSize,category,startDate,endDate,minAmount,maxAmount);
+
+        return expenseDTOS;
     }
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/expenses")

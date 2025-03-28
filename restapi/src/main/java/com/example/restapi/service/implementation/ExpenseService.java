@@ -1,6 +1,7 @@
 package com.example.restapi.service.implementation;
 
 import com.example.restapi.dto.ExpenseDTO;
+import com.example.restapi.dto.ExpensePageResponseDTO;
 import com.example.restapi.entity.ExpenseEntity;
 import com.example.restapi.exceptions.ResourceNotFoundException;
 import com.example.restapi.repository.IExpenseRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,18 +37,37 @@ public class ExpenseService implements IExpenseService {
     }
 
     @Override
-    public Page<ExpenseDTO> getAllExpensesPaged(int page, int pageSize, String category, String startDate, String endDate, Double minAmount, Double maxAmount) {
+    public ExpensePageResponseDTO getAllExpensesPaged(int page, int pageSize, String category, String startDate, String endDate, Double minAmount, Double maxAmount) {
         List<ExpenseEntity> expenses = expenseRepository.findByOwnerId(getLoggedInProfileId());
         List<ExpenseDTO> filteredExpenses = expenses.stream()
-                .filter(expense -> category == null || category.isEmpty() || expense.getCategory().equals(category))
-                .filter(expense -> startDate == null || !expense.getCreatedAt().before(Timestamp.valueOf(startDate + " 00:00:00")))
-                .filter(expense -> endDate == null || !expense.getCreatedAt().after(Timestamp.valueOf(endDate + " 23:59:59")))
+                .filter(expense -> category == null || category.isEmpty() || String.valueOf(expense.getCategory()).equals(category))
+                .filter(expense -> {
+                    if (startDate == null || startDate.isEmpty()) return true;
+                    return !expense.getCreatedAt().before(parseFrontendDateStart(startDate));
+                })
+                .filter(expense -> {
+                    if (endDate == null || endDate.isEmpty()) return true;
+                    return !expense.getCreatedAt().after(parseFrontendDateEnd(endDate));
+                })
                 .filter(expense -> minAmount == null || expense.getAmount().doubleValue() >= minAmount)
                 .filter(expense -> maxAmount == null || expense.getAmount().doubleValue() <= maxAmount)
                 .map(this::mapExpenseToDTO)
                 .collect(Collectors.toList());
 
-        return paginateList(filteredExpenses, PageRequest.of(page, pageSize));
+        double totalAmount = filteredExpenses.stream()
+                .mapToDouble( ExpenseDTO::getAmountDoubleValue )
+                .sum();
+
+
+        Page<ExpenseDTO> expensePage = paginateList(filteredExpenses, PageRequest.of(page, pageSize));
+        return new ExpensePageResponseDTO(
+                expensePage.getContent(),
+                expensePage.getNumber(),
+                expensePage.getSize(),
+                expensePage.getTotalElements(),
+                expensePage.getTotalPages(),
+                totalAmount
+        );
     }
 
     private Page<ExpenseDTO> paginateList(List<ExpenseDTO> expenses, Pageable pageable) {
@@ -113,5 +134,17 @@ public class ExpenseService implements IExpenseService {
 
     private Long getLoggedInProfileId() {
         return authService.getLoggedInProfile().getId();
+    }
+
+    private Timestamp parseFrontendDateStart(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate date = LocalDate.parse(dateString, formatter);
+        return Timestamp.valueOf(date.atStartOfDay());
+    }
+
+    private Timestamp parseFrontendDateEnd(String dateString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate date = LocalDate.parse(dateString, formatter);
+        return Timestamp.valueOf(date.atTime(23, 59, 59));
     }
 }

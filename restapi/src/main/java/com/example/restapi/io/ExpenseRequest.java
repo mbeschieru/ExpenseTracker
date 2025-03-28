@@ -1,6 +1,7 @@
 package com.example.restapi.io;
 
 import com.example.restapi.entity.ExpenseCategory;
+import com.example.restapi.util.ValidExpenseCategory;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -22,8 +23,8 @@ public class ExpenseRequest {
     private String name;
 
     private String description;
-
-    @NotBlank(message = "Expense category is required.")
+    
+    @ValidExpenseCategory
     private ExpenseCategory category;
 
     @NotNull(message = "Expense category is required.")
