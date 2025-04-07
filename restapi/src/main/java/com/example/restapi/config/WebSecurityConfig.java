@@ -45,7 +45,7 @@
         @Bean
         public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
             return httpSecurity.csrf(csrf -> csrf.disable())
-                    .authorizeHttpRequests(auth -> auth.requestMatchers( "/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/oauth2/**")
+                    .authorizeHttpRequests(auth -> auth.requestMatchers( "/auth/**", "/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**","/oauth2/**","/files/**")
                             .permitAll()
                             .requestMatchers("/expenses/**")
                             .permitAll()
